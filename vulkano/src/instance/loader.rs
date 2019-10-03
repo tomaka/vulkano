@@ -21,6 +21,7 @@
 //! By default vulkano will use the `auto_loader()` function, which tries to automatically load
 //! a Vulkan implementation from the system.
 
+#[cfg(not(target_arch = "wasm32"))]
 use shared_library;
 use std::error;
 use std::fmt;
@@ -54,12 +55,14 @@ unsafe impl<T> Loader for T
 }
 
 /// Implementation of `Loader` that loads Vulkan from a dynamic library.
+#[cfg(not(target_arch = "wasm32"))]
 pub struct DynamicLibraryLoader {
     vk_lib: shared_library::dynamic_library::DynamicLibrary,
     get_proc_addr: extern "system" fn(instance: vk::Instance, pName: *const c_char)
                                       -> extern "system" fn() -> (),
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl DynamicLibraryLoader {
     /// Tries to load the dynamic library at the given path, and tries to
     /// load `vkGetInstanceProcAddr` in it.
@@ -91,6 +94,7 @@ impl DynamicLibraryLoader {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 unsafe impl Loader for DynamicLibraryLoader {
     #[inline]
     fn get_instance_proc_addr(&self, instance: vk::Instance, name: *const c_char)
@@ -171,14 +175,14 @@ macro_rules! statically_linked_vulkan_loader {
 pub fn auto_loader()
     -> Result<&'static FunctionPointers<Box<dyn Loader + Send + Sync>>, LoadingError>
 {
-    #[cfg(target_os = "ios")]
+    #[cfg(any(target_os = "ios", target_arch = "wasm32"))]
     #[allow(non_snake_case)]
     fn def_loader_impl() -> Result<Box<Loader + Send + Sync>, LoadingError> {
         let loader = statically_linked_vulkan_loader!();
         Ok(Box::new(loader))
     }
 
-    #[cfg(not(target_os = "ios"))]
+    #[cfg(not(any(target_os = "ios", target_arch = "wasm32")))]
     fn def_loader_impl() -> Result<Box<dyn Loader + Send + Sync>, LoadingError> {
         #[cfg(windows)]
         fn get_path() -> &'static Path {

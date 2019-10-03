@@ -66,6 +66,7 @@ extern crate crossbeam;
 extern crate fnv;
 #[macro_use]
 extern crate lazy_static;
+#[cfg(not(target_arch = "wasm32"))]
 extern crate shared_library;
 extern crate smallvec;
 extern crate vk_sys as vk;

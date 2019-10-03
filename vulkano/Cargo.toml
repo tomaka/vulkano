@@ -15,8 +15,10 @@ build = "build.rs"
 [dependencies]
 crossbeam = "0.7"
 fnv = "1.0.6"
-shared_library = "0.1.7"
 smallvec = "0.6.0"
 lazy_static = "1"
 vk-sys = { version = "0.4.0", path = "../vk-sys" }
 half = "1"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+shared_library = "0.1.7"
